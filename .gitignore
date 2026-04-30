@@ -1,0 +1,12 @@
+# .gitignore
+
+# Bazel output directories
+bazel-*
+# Topology output produced by `remotive topology generate` per the example README
+examples/remotive_topology/build/
+# User-specific or local config files
+.bazelrc.user
+# OS/editor files
+*.swp
+.DS_Store
+

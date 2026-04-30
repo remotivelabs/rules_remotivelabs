@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: bazel test (rules_remotivelabs)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+
+      - name: Test
+        run: bazel test //tests:all --test_output=errors
+
+  example-tests:
+    name: bazel test (example consumer)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: examples/remotive_topology
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+          module-root: examples/remotive_topology
+
+      - name: Test
+        run: bazel test //... --test_output=errors
+
+  buildifier:
+    name: buildifier
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install buildifier
+        env:
+          BUILDIFIER_VERSION: "8.5.1"
+        run: |
+          set -eo pipefail
+          curl -fsSL -o /tmp/buildifier \
+            "https://github.com/bazelbuild/buildtools/releases/download/v${BUILDIFIER_VERSION}/buildifier-linux-amd64"
+          chmod +x /tmp/buildifier
+          sudo mv /tmp/buildifier /usr/local/bin/buildifier
+          buildifier --version
+
+      - name: Format check
+        run: buildifier -r -mode=check .
+
+      - name: Lint
+        run: buildifier -r -mode=check -lint=warn .

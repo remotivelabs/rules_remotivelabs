@@ -1,0 +1,8 @@
+exports_files([
+    "remotive_topology_repo.bzl",
+    "remotive_topology_BUILD.bazel.tpl",
+    "topology_bazel_shim.sh.tpl",
+    "topology_toolchains_hub.bzl",
+    "topology_toolchains_hub_BUILD.bazel.tpl",
+    "topology_toolchain_BLOCK.bazel.tpl",
+])

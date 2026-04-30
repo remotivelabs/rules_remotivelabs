@@ -1,0 +1,50 @@
+module(
+    name = "rules_remotivelabs",
+    version = "0.1.0",
+    compatibility_level = 1,
+)
+
+# ------------------------------------------------------------------
+# Core deps
+# ------------------------------------------------------------------
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_shell", version = "0.6.1")
+
+# ------------------------------------------------------------------
+# Test-only deps
+# ------------------------------------------------------------------
+bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
+
+# ------------------------------------------------------------------
+# Public side: pull in the always-created hub repo and register every
+# (version, platform) toolchain it advertises. This propagates to every
+# consumer so they don't need their own register_toolchains line.
+# ------------------------------------------------------------------
+remotivelabs = use_extension(
+    "//remotivelabs:extensions.bzl",
+    "remotivelabs",
+)
+use_repo(remotivelabs, "remotivelabs_topology_toolchains")
+
+register_toolchains("@remotivelabs_topology_toolchains//:all")
+
+# ------------------------------------------------------------------
+# Dev side: request a topology version for our own tests. Marked
+# dev_dependency so consumers don't unintentionally inherit this version.
+# ------------------------------------------------------------------
+remotivelabs_dev = use_extension(
+    "//remotivelabs:extensions.bzl",
+    "remotivelabs",
+    dev_dependency = True,
+)
+remotivelabs_dev.topology(version = "0.23.0")
+
+# Make the per-platform repos directly visible to our build_test which
+# verifies each `@remotive_topology_X_Y_Z_<platform>//:topology` runfiles
+# tree assembles. Consumers don't need this — they go through the hub.
+use_repo(
+    remotivelabs_dev,
+    "remotive_topology_0_23_0_linux_aarch64",
+    "remotive_topology_0_23_0_linux_x86_64",
+)

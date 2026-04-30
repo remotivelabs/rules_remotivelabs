@@ -1,0 +1,21 @@
+# Child workspace exercised by the bazel_integration_test in examples/BUILD.bazel.
+# Validates the minimum-effort consumer API: just declare a topology version,
+# no use_repo or register_toolchains needed.
+
+module(
+    name = "remotive_topology_examples",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_shell", version = "0.6.1")
+bazel_dep(name = "rules_remotivelabs", version = "0.1.0")
+local_path_override(
+    module_name = "rules_remotivelabs",
+    path = "../..",
+)
+
+remotivelabs = use_extension(
+    "@rules_remotivelabs//remotivelabs:extensions.bzl",
+    "remotivelabs",
+)
+remotivelabs.topology(version = "0.23.0")

@@ -1,0 +1,24 @@
+load("@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_generate")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+# Exercises remotive_topology_generate end-to-end against a minimal fixture.
+remotive_topology_generate(
+    name = "minimal_topology",
+    srcs = ["topology/instances/main.instance.yaml"],
+    data = glob([
+        "topology/instances/*.yaml",
+        "topology/models/*.yaml",
+        "topology/tests/*.yaml",
+        "topology/platform/*.yaml",
+        "topology/platform/databases/*.dbc",
+    ]) + ["topology/Dockerfile"],
+)
+
+sh_test(
+    name = "remotive_topology_test",
+    srcs = ["remotive_topology_test.sh"],
+    data = [":minimal_topology"],
+    env = {
+        "TOPOLOGY_OUT": "$(rootpath :minimal_topology)",
+    },
+)

@@ -1,0 +1,2 @@
+remotivelabs-broker>=0.13
+pytest>=8

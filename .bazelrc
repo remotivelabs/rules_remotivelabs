@@ -1,0 +1,19 @@
+
+# Enable bzlmod (required)
+common --enable_bzlmod
+
+# Enforce that all targets are compatible with the declared platforms
+build --incompatible_enforce_config_setting_visibility
+
+# Show test output on failure
+test --test_output=errors
+
+# CI: treat warnings as errors in .bzl files
+build:ci --features=bzl_strict_action_env
+
+# `examples/remotive_topology` is a child workspace with its own MODULE.bazel.
+# Hide it from the parent's package universe so `bazel test //...` here
+# doesn't accidentally pull in the example targets — exercise the example
+# by `cd examples/remotive_topology && bazel test //...` instead.
+build --deleted_packages=examples/remotive_topology
+query --deleted_packages=examples/remotive_topology

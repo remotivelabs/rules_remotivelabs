@@ -1,0 +1,43 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_generate")
+
+# Test that public bzl files can be loaded
+build_test(
+    name = "public_targets_build_test",
+    targets = [
+        "//remotivelabs:extensions_bzl",
+        "//remotivelabs/rules:remotive_topology_bzl",
+    ],
+)
+
+# Test that the extension creates a working topology repo for every
+# (version, platform) the manifest registers. Building the sh_binary
+# only assembles its runfiles tree; the binary itself doesn't run, so
+# this works even when the host arch doesn't match.
+build_test(
+    name = "topology_extension_test",
+    targets = [
+        "@remotive_topology_0_23_0_linux_x86_64//:topology",
+        "@remotive_topology_0_23_0_linux_aarch64//:topology",
+    ],
+)
+
+# Exercises remotive_topology_generate end-to-end. The topology binary is
+# resolved through the registered toolchain (see register_toolchains in
+# the root MODULE.bazel).
+remotive_topology_generate(
+    name = "minimal_topology",
+    srcs = ["fixtures/topology/instances/main.instance.yaml"],
+    data = glob([
+        "fixtures/topology/instances/*.yaml",
+        "fixtures/topology/models/*.yaml",
+        "fixtures/topology/tests/*.yaml",
+        "fixtures/topology/platform/*.yaml",
+        "fixtures/topology/platform/databases/*.dbc",
+    ]) + ["fixtures/topology/Dockerfile"],
+)
+
+build_test(
+    name = "topology_generate_test",
+    targets = [":minimal_topology"],
+)
