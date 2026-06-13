@@ -10,7 +10,7 @@ the Bazel sandbox.
 `MODULE.bazel`:
 
 ```starlark
-bazel_dep(name = "rules_remotivelabs", version = "0.1.0")
+bazel_dep(name = "rules_remotivelabs", version = "0.2.0")
 
 remotivelabs = use_extension("@rules_remotivelabs//remotivelabs:extensions.bzl", "remotivelabs")
 remotivelabs.topology(version = "0.29.1")
