@@ -17,8 +17,9 @@ build_test(
 build_test(
     name = "topology_extension_test",
     targets = [
-        "@remotive_topology_0_23_0_linux_x86_64//:topology",
-        "@remotive_topology_0_23_0_linux_aarch64//:topology",
+        "@remotive_topology_0_29_1_linux_x86_64//:topology",
+        "@remotive_topology_0_29_1_linux_aarch64//:topology",
+        "@remotive_topology_0_29_1_darwin_arm64//:topology",
     ],
 )
 

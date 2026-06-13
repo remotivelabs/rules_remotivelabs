@@ -13,6 +13,7 @@ globally so consumers don't need their own `register_toolchains` line.
 _PLATFORM_CONSTRAINTS = {
     "linux-x86_64": ("@platforms//os:linux", "@platforms//cpu:x86_64"),
     "linux-aarch64": ("@platforms//os:linux", "@platforms//cpu:aarch64"),
+    "darwin-arm64": ("@platforms//os:macos", "@platforms//cpu:aarch64"),
 }
 
 def _topology_toolchains_hub_impl(ctx):

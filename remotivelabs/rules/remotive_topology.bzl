@@ -16,41 +16,26 @@ def _impl(ctx):
     binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
 
     args = ctx.actions.args()
-    args.add("generate")
+    args.add("build")
+    # No workspace exists in the sandbox; the positional output path is
+    # required in this mode. Per-action caching still works via REMOTIVE_CACHE_DIR.
+    args.add("--no-workspace")
     args.add(out_dir.path)
     for src in ctx.files.srcs:
         args.add("-f", src.path)
 
-    # Env vars set unconditionally for hermetic sandbox operation.
-    # FIX-UPSTREAM tags mark workarounds we should drop once the binary
-    # is fixed; the unmarked vars are legitimate Bazel-side config.
+    # Hermetic per-action env for the topology binary. The binary's
+    # XDG resolver honors `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive
+    # > $HOME/<XDG-default>`, so pinning slot 1 keeps every config and
+    # cache write inside the Bazel sandbox regardless of consumer env.
     env = {
-        # Pre-consent on the user's behalf — the binary's interactive
-        # consent prompt can't run inside the Bazel sandbox, and a hard
-        # failure on every token-less build would be worse UX than this
-        # implicit opt-in. The README discloses the implicit consent.
-        #
-        # TRANSITIONAL: anonymous analytics is being removed. Once the
-        # binary requires a service-account `REMOTIVE_CLOUD_AUTH_TOKEN`
-        # for every call, drop this var and let absent tokens fail with
-        # a clear error instead of pre-consenting.
+        # Pre-consent — the interactive consent prompt can't run inside
+        # the Bazel sandbox. Transitional; will be dropped once the binary
+        # requires REMOTIVE_CLOUD_AUTH_TOKEN for every call.
         "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
-        # Hermetic per-action config dir. FIX-UPSTREAM: when the binary
-        # adopts XDG (reads XDG_CONFIG_HOME for `$XDG_CONFIG_HOME/remotive`),
-        # this app-specific var becomes redundant and we can drop it.
+        # Hermetic per-action dirs.
         "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
-        # FIX-UPSTREAM: the binary's codec cache writes to
-        # `<REMOTIVE_TOPOLOGY_WORKSPACE>/.remotive/cache/...`, which would
-        # leak undeclared writes from Bazel's hermetic sandbox. Disabled
-        # for now; once the binary honours `XDG_CACHE_HOME` (or any
-        # per-action override), redirect to scratch and re-enable so
-        # multi-ECU topologies parse shared databases once per action.
-        "REMOTIVE_TOPOLOGY_CACHE_DISABLED": "true",
-        # FIX-UPSTREAM: drop once the binary stops calling `Path.home()`
-        # directly and routes config / cache lookups through XDG vars
-        # (`XDG_CONFIG_HOME`, `XDG_CACHE_HOME`, with `$HOME`-relative
-        # defaults baked into the XDG spec).
-        "HOME": "/tmp",
+        "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
     }
 
     ctx.actions.run(

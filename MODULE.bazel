@@ -38,13 +38,14 @@ remotivelabs_dev = use_extension(
     "remotivelabs",
     dev_dependency = True,
 )
-remotivelabs_dev.topology(version = "0.23.0")
+remotivelabs_dev.topology(version = "0.29.1")
 
 # Make the per-platform repos directly visible to our build_test which
-# verifies each `@remotive_topology_X_Y_Z_<platform>//:topology` runfiles
+# verifies each `@remotive_topology_<version>_<platform>//:topology` runfiles
 # tree assembles. Consumers don't need this — they go through the hub.
 use_repo(
     remotivelabs_dev,
-    "remotive_topology_0_23_0_linux_aarch64",
-    "remotive_topology_0_23_0_linux_x86_64",
+    "remotive_topology_0_29_1_darwin_arm64",
+    "remotive_topology_0_29_1_linux_aarch64",
+    "remotive_topology_0_29_1_linux_x86_64",
 )

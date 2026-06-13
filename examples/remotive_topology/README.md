@@ -46,7 +46,7 @@ installed locally.
 
 ```bash
 # generate the docker-compose tree
-remotive topology generate \
+remotive topology build --no-workspace \
   -f topology/instances/main.instance.yaml \
   ./build
 
