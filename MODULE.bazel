@@ -16,6 +16,9 @@ bazel_dep(name = "rules_shell", version = "0.6.1")
 # ------------------------------------------------------------------
 bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
 
+# Docs generation (//docs). Dev-only — consumers don't render our docs.
+bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
+
 # ------------------------------------------------------------------
 # Public side: pull in the always-created hub repo and register every
 # (version, platform) toolchain it advertises. This propagates to every

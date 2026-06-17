@@ -5,3 +5,6 @@ bzl_library(
     srcs = ["remotive_topology.bzl"],
     visibility = ["//visibility:public"],
 )
+
+# Let Stardoc (//docs) read the source as its `input`.
+exports_files(["remotive_topology.bzl"], visibility = ["//docs:__pkg__"])

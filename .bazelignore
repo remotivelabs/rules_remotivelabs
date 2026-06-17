@@ -1,0 +1,4 @@
+# examples/remotive_topology is a separate Bazel module (own MODULE.bazel),
+# exercised by its own CI job. Ignoring it keeps the root `//...` pattern from
+# descending into its nested workspace / bazel-* convenience symlinks.
+examples

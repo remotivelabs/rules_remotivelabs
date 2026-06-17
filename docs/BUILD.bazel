@@ -1,0 +1,37 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+
+# Markdown API docs rendered from the public Starlark. These are build outputs
+# (bazel-bin/docs/*.md), not checked in. Render locally with e.g.
+#   bazel build //docs:remotive_topology_md && cat bazel-bin/docs/remotive_topology_generate.md
+
+stardoc(
+    name = "remotive_topology_md",
+    out = "remotive_topology_generate.md",
+    input = "//remotivelabs/rules:remotive_topology.bzl",
+    deps = ["//remotivelabs/rules:remotive_topology_bzl"],
+)
+
+stardoc(
+    name = "toolchain_md",
+    out = "topology_toolchain.md",
+    input = "//remotivelabs/toolchains/remotive_topology:defs.bzl",
+    deps = ["//remotivelabs/toolchains/remotive_topology:defs_bzl"],
+)
+
+stardoc(
+    name = "extension_md",
+    out = "topology_extension.md",
+    input = "//remotivelabs:extensions.bzl",
+    deps = ["//remotivelabs:bzl_srcs"],
+)
+
+# Exercises doc extraction in CI — fails if a docstring/attr change breaks Stardoc.
+build_test(
+    name = "docs_build_test",
+    targets = [
+        ":remotive_topology_md",
+        ":toolchain_md",
+        ":extension_md",
+    ],
+)

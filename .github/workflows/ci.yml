@@ -25,7 +25,7 @@ jobs:
           repository-cache: true
 
       - name: Test
-        run: bazel test //tests:all --test_output=errors
+        run: bazel test //... --test_output=errors
 
   example-tests:
     name: bazel test (example consumer)

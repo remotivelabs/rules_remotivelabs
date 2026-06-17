@@ -6,8 +6,14 @@ bzl_library(
     visibility = ["//visibility:public"],
 )
 
+# Let Stardoc (//docs) read the source as its `input`.
+exports_files(["extensions.bzl"], visibility = ["//docs:__pkg__"])
+
 bzl_library(
     name = "bzl_srcs",
     srcs = glob(["*.bzl"]),
+    # extensions.bzl loads the private repo/hub/versions Starlark; pull it in
+    # so this is the full load graph (used as Stardoc deps for the extension).
+    deps = ["//remotivelabs/private/remotive_topology:bzl_srcs"],
     visibility = ["//visibility:public"],
 )
