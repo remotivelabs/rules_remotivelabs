@@ -1,8 +1,8 @@
-load("@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_generate")
+load("@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_build")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
-# Exercises remotive_topology_generate end-to-end against a minimal fixture.
-remotive_topology_generate(
+# Exercises remotive_topology_build end-to-end against a minimal fixture.
+remotive_topology_build(
     name = "minimal_topology",
     srcs = ["topology/instances/main.instance.yaml"],
     data = glob([

@@ -2,7 +2,7 @@
 
 ## Bazel Rules Developer
 **When:** Implementing or modifying the module extension, the
-`remotive_topology_repo` repository rule, the `remotive_topology_generate`
+`remotive_topology_repo` repository rule, the `remotive_topology_build`
 action rule, or the `remotive_topology_toolchain` plumbing.
 **Responsibilities:**
 - Distribution is a single tar archive per `(version, arch)`, downloaded via

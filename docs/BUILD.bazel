@@ -7,7 +7,7 @@ load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 
 stardoc(
     name = "remotive_topology_md",
-    out = "remotive_topology_generate.md",
+    out = "remotive_topology_build.md",
     input = "//remotivelabs/rules:remotive_topology.bzl",
     deps = ["//remotivelabs/rules:remotive_topology_bzl"],
 )

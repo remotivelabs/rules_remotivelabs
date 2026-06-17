@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_generate")
+load("//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_build")
 
 # Test that public bzl files can be loaded
 build_test(
@@ -23,10 +23,10 @@ build_test(
     ],
 )
 
-# Exercises remotive_topology_generate end-to-end. The topology binary is
+# Exercises remotive_topology_build end-to-end. The topology binary is
 # resolved through the registered toolchain (see register_toolchains in
 # the root MODULE.bazel).
-remotive_topology_generate(
+remotive_topology_build(
     name = "minimal_topology",
     srcs = ["fixtures/topology/instances/main.instance.yaml"],
     data = glob([
@@ -39,6 +39,6 @@ remotive_topology_generate(
 )
 
 build_test(
-    name = "topology_generate_test",
+    name = "topology_build_test",
     targets = [":minimal_topology"],
 )

@@ -2,7 +2,7 @@
 
 Bazel rules for the [RemotiveLabs](https://remotivelabs.com)
 `remotive-topology` generator. Downloads the published native binary
-and exposes a `remotive_topology_generate` rule that runs it inside
+and exposes a `remotive_topology_build` rule that runs it inside
 the Bazel sandbox.
 
 ## Usage
@@ -19,9 +19,9 @@ remotivelabs.topology(version = "0.29.1")
 `BUILD.bazel`:
 
 ```starlark
-load("@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_generate")
+load("@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_build")
 
-remotive_topology_generate(
+remotive_topology_build(
     name = "my_topology",
     srcs = ["topology/instances/main.instance.yaml"],
     data = glob(["topology/**"]),
@@ -34,7 +34,7 @@ Supported versions: [`versions.bzl`](remotivelabs/private/remotive_topology/vers
 
 ## Analytics
 
-Every `remotive_topology_generate` action submits analytics to Remotive
+Every `remotive_topology_build` action submits analytics to Remotive
 Cloud, attributed to the org behind a **service-account token**.
 Forward your token from the shell to Bazel actions:
 

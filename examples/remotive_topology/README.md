@@ -1,7 +1,7 @@
 # remotive_topology example
 
 Minimum-viable consumer of `rules_remotivelabs`. Demonstrates the
-`remotive_topology_generate` rule against a tiny topology, plus enough
+`remotive_topology_build` rule against a tiny topology, plus enough
 runtime code that `docker compose up` against the generated output
 brings up containers and a passing pytest.
 
@@ -66,7 +66,7 @@ Tear down with `docker compose down`.
 
 ```
 examples/remotive_topology/
-├── BUILD.bazel                      remotive_topology_generate target
+├── BUILD.bazel                      remotive_topology_build target
 ├── MODULE.bazel                     consumer-style declaration
 ├── remotive_topology_test.sh        Bazel-side smoke check on output
 └── topology/

@@ -11,7 +11,7 @@ repo aggregates these into `toolchain(...)` registrations with
 registers `@remotivelabs_topology_toolchains//:all` so the toolchains
 are available globally without consumer-side `register_toolchains`.
 
-`remotive_topology_generate` resolves the binary through
+`remotive_topology_build` resolves the binary through
 `ctx.toolchains[...]`.
 """
 

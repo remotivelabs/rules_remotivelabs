@@ -1,5 +1,5 @@
 """
-Generates topology files from `*.instance.yaml` sources by invoking the
+Builds topology files from `*.instance.yaml` sources by invoking the
 native `remotive-topology` binary inside the Bazel sandbox.
 
 The binary is resolved through the Bazel toolchain that
@@ -46,13 +46,13 @@ def _impl(ctx):
         env = env,
         # ERTS wrappers shell out to `dirname` etc.; need host PATH.
         use_default_shell_env = True,
-        mnemonic = "RemotiveTopologyGenerate",
-        progress_message = "Generating topology for %{label}",
+        mnemonic = "RemotiveTopologyBuild",
+        progress_message = "Building topology for %{label}",
     )
 
     return [DefaultInfo(files = depset([out_dir]))]
 
-remotive_topology_generate = rule(
+remotive_topology_build = rule(
     implementation = _impl,
     attrs = {
         "srcs": attr.label_list(
