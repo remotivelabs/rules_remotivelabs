@@ -3,7 +3,7 @@ load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 
 # Markdown API docs rendered from the public Starlark. These are build outputs
 # (bazel-bin/docs/*.md), not checked in. Render locally with e.g.
-#   bazel build //docs:remotive_topology_md && cat bazel-bin/docs/remotive_topology_generate.md
+#   bazel build //docs:remotive_topology_md && cat bazel-bin/docs/remotive_topology_build.md
 
 stardoc(
     name = "remotive_topology_md",
