@@ -1,0 +1,4 @@
+schema: remotive-topology-platform:0.16
+
+includes:
+  - dummy_gateway.arxml

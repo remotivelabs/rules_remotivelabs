@@ -1,5 +1,10 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_build")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load(
+    "//remotivelabs/rules:remotive_topology.bzl",
+    "remotive_topology_build",
+    "remotive_topology_gateway_mapping",
+)
 
 # Test that public bzl files can be loaded
 build_test(
@@ -17,9 +22,9 @@ build_test(
 build_test(
     name = "topology_extension_test",
     targets = [
-        "@remotive_topology_0_29_1_linux_x86_64//:topology",
-        "@remotive_topology_0_29_1_linux_aarch64//:topology",
-        "@remotive_topology_0_29_1_darwin_arm64//:topology",
+        "@remotive_topology_0_30_0_linux_x86_64//:topology",
+        "@remotive_topology_0_30_0_linux_aarch64//:topology",
+        "@remotive_topology_0_30_0_darwin_arm64//:topology",
     ],
 )
 
@@ -41,4 +46,38 @@ remotive_topology_build(
 build_test(
     name = "topology_build_test",
     targets = [":minimal_topology"],
+)
+
+# Exercises remotive_topology_gateway_mapping end-to-end. The synthetic
+# ARXML fixture (written from scratch — no customer data) declares one
+# gateway ECU with four forwarding routes covering every channel-type
+# combination: CAN->CAN, CAN->ETH, ETH->LIN, LIN->CAN.
+remotive_topology_gateway_mapping(
+    name = "dummy_gateway_mapping",
+    data = ["fixtures/topology/gateway/dummy_gateway.arxml"],
+    format = "remotive-topology-mapping",
+    gateway_ecu = "GatewayEcu",
+    platform = "fixtures/topology/gateway/gateway.platform.yaml",
+)
+
+remotive_topology_gateway_mapping(
+    name = "dummy_gateway_mapping_legacy",
+    data = ["fixtures/topology/gateway/dummy_gateway.arxml"],
+    gateway_ecu = "GatewayEcu",
+    platform = "fixtures/topology/gateway/gateway.platform.yaml",
+)
+
+build_test(
+    name = "gateway_mapping_build_test",
+    targets = [
+        ":dummy_gateway_mapping",
+        ":dummy_gateway_mapping_legacy",
+    ],
+)
+
+sh_test(
+    name = "gateway_mapping_content_test",
+    srcs = ["gateway_mapping_test.sh"],
+    data = [":dummy_gateway_mapping"],
+    env = {"MAPPING_OUT": "$(rootpath :dummy_gateway_mapping)"},
 )

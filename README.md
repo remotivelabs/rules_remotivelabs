@@ -13,7 +13,7 @@ the Bazel sandbox.
 bazel_dep(name = "rules_remotivelabs", version = "0.2.0")
 
 remotivelabs = use_extension("@rules_remotivelabs//remotivelabs:extensions.bzl", "remotivelabs")
-remotivelabs.topology(version = "0.29.1")
+remotivelabs.topology(version = "0.30.0")
 ```
 
 `BUILD.bazel`:
