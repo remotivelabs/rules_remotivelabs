@@ -4,6 +4,7 @@ load(
     "//remotivelabs/rules:remotive_topology.bzl",
     "remotive_topology_build",
     "remotive_topology_gateway_mapping",
+    "remotive_topology_show_instance",
 )
 
 # Test that public bzl files can be loaded
@@ -41,6 +42,25 @@ remotive_topology_build(
         "fixtures/topology/platform/*.yaml",
         "fixtures/topology/platform/databases/*.dbc",
     ]) + ["fixtures/topology/Dockerfile"],
+)
+
+remotive_topology_show_instance(
+    name = "minimal_resolved_instance",
+    src = "fixtures/topology/instances/main.instance.yaml",
+    data = glob([
+        "fixtures/topology/instances/*.yaml",
+        "fixtures/topology/models/*.yaml",
+        "fixtures/topology/tests/*.yaml",
+        "fixtures/topology/platform/*.yaml",
+        "fixtures/topology/platform/databases/*.dbc",
+    ]) + ["fixtures/topology/Dockerfile"],
+)
+
+sh_test(
+    name = "instance_resolution_test",
+    srcs = ["instance_resolution_test.sh"],
+    data = [":minimal_resolved_instance"],
+    env = {"INSTANCE_OUT": "$(rootpath :minimal_resolved_instance)"},
 )
 
 build_test(

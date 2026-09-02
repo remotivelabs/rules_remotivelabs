@@ -73,6 +73,56 @@ remotive_topology_build = rule(
     toolchains = [_TOOLCHAIN_TYPE],
 )
 
+def _show_instance_impl(ctx):
+    output = ctx.actions.declare_file(ctx.label.name + ".json")
+    binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
+
+    args = ctx.actions.args()
+    args.add_all([
+        "show",
+        "instance",
+        ctx.file.src.path,
+        "--json",
+        "--check",
+        "--out-path",
+        output.path,
+    ])
+
+    ctx.actions.run(
+        executable = binary,
+        arguments = [args],
+        inputs = depset([ctx.file.src] + ctx.files.data),
+        outputs = [output],
+        env = {
+            "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
+            "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
+            "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
+        },
+        use_default_shell_env = True,
+        mnemonic = "RemotiveTopologyShowInstance",
+        progress_message = "Resolving topology instance for %{label}",
+    )
+
+    return [DefaultInfo(files = depset([output]))]
+
+remotive_topology_show_instance = rule(
+    implementation = _show_instance_impl,
+    doc = "Resolves and validates an instance into a JSON document.",
+    attrs = {
+        "src": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "The root `*.instance.yaml` file to resolve.",
+        ),
+        "data": attr.label_list(
+            allow_files = True,
+            default = [],
+            doc = "Additional included instance/platform/database files.",
+        ),
+    },
+    toolchains = [_TOOLCHAIN_TYPE],
+)
+
 def _gateway_mapping_impl(ctx):
     out = ctx.actions.declare_file(ctx.label.name + ".mapping.yaml")
     binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
