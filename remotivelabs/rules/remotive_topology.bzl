@@ -1,9 +1,10 @@
 """
 Rules that invoke the native `remotive-topology` binary inside the
 Bazel sandbox: `remotive_topology_build` builds topology files from
-`*.instance.yaml` sources; `remotive_topology_show_instance` resolves an
-instance into JSON; `remotive_topology_gateway_mapping` extracts one
-gateway ECU's mapping document from a platform.
+`*.instance.yaml` sources; `remotive_topology_show_instance` and
+`remotive_topology_show_platform` resolve an instance or a platform into
+JSON; `remotive_topology_gateway_mapping` extracts one gateway ECU's
+mapping document from a platform.
 
 The binary is resolved through the Bazel toolchain that
 `rules_remotivelabs` registers globally via the
@@ -74,20 +75,20 @@ remotive_topology_build = rule(
     toolchains = [_TOOLCHAIN_TYPE],
 )
 
-def _show_instance_impl(ctx):
+def _run_show(ctx, subcommand, flags, progress_message):
+    """Runs `remotive-topology show <subcommand>` and returns the JSON output file.
+
+    `show` has no `--no-workspace` flag; without a workspace marker the
+    binary uses its working directory (the action's execroot) as the path
+    boundary, which both the source and the output path satisfy.
+    """
     output = ctx.actions.declare_file(ctx.label.name + ".json")
     binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
 
     args = ctx.actions.args()
-    args.add_all([
-        "show",
-        "instance",
-        ctx.file.src.path,
-        "--json",
-        "--check",
-        "--out-path",
-        output.path,
-    ])
+    args.add_all(["show", subcommand, ctx.file.src.path, "--json"])
+    args.add_all(flags)
+    args.add("--out-path", output.path)
 
     ctx.actions.run(
         executable = binary,
@@ -97,15 +98,23 @@ def _show_instance_impl(ctx):
         env = _ACTION_ENV,
         # ERTS wrappers shell out to `dirname` etc.; need host PATH.
         use_default_shell_env = True,
-        mnemonic = "RemotiveTopologyShowInstance",
-        progress_message = "Resolving topology instance for %{label}",
+        mnemonic = "RemotiveTopologyShow" + subcommand.capitalize(),
+        progress_message = progress_message,
     )
 
     return [DefaultInfo(files = depset([output]))]
 
+def _show_instance_impl(ctx):
+    return _run_show(
+        ctx,
+        "instance",
+        ["--check"],
+        "Resolving topology instance for %{label}",
+    )
+
 remotive_topology_show_instance = rule(
     implementation = _show_instance_impl,
-    doc = "Resolves and validates an instance into a JSON document.",
+    doc = "Resolves and validates an instance into a JSON document: `<name>.json`.",
     attrs = {
         "src": attr.label(
             allow_single_file = True,
@@ -116,6 +125,37 @@ remotive_topology_show_instance = rule(
             allow_files = True,
             default = [],
             doc = "Additional included instance/platform/database files.",
+        ),
+    },
+    toolchains = [_TOOLCHAIN_TYPE],
+)
+
+def _show_platform_impl(ctx):
+    return _run_show(
+        ctx,
+        "platform",
+        [],
+        "Resolving topology platform for %{label}",
+    )
+
+remotive_topology_show_platform = rule(
+    implementation = _show_platform_impl,
+    doc = "Resolves a platform into a JSON document: `<name>.json`. The " +
+          "source may be a `*.platform.yaml`, a `*.instance.yaml` (its " +
+          "platform is shown) or a single signal database.",
+    attrs = {
+        "src": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "The `*.platform.yaml`, `*.instance.yaml` or database " +
+                  "file (`.arxml`, `.dbc`, `.ldf`, `.xml`, `.signaldb.yaml`) " +
+                  "to resolve.",
+        ),
+        "data": attr.label_list(
+            allow_files = True,
+            default = [],
+            doc = "Files the source references (signal databases, " +
+                  "included platform/instance files, ...).",
         ),
     },
     toolchains = [_TOOLCHAIN_TYPE],
