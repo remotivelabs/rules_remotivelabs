@@ -11,7 +11,7 @@ repo aggregates these into `toolchain(...)` registrations with
 registers `@remotivelabs_topology_toolchains//:all` so the toolchains
 are available globally without consumer-side `register_toolchains`.
 
-`remotive_topology_build` resolves the binary through
+The rules resolve the binary (and its version) through
 `ctx.toolchains[...]`.
 """
 
@@ -19,6 +19,8 @@ RemotiveTopologyToolchainInfo = provider(
     doc = "Information about the remotive-topology binary that the action rule needs.",
     fields = {
         "binary": "FilesToRunProvider for the topology executable.",
+        "version": "Release version of the binary, e.g. \"0.32.1\". Lets rules " +
+                   "gate attributes that only newer binaries understand.",
     },
 )
 
@@ -27,6 +29,7 @@ def _remotive_topology_toolchain_impl(ctx):
         platform_common.ToolchainInfo(
             topology_info = RemotiveTopologyToolchainInfo(
                 binary = ctx.attr.binary[DefaultInfo].files_to_run,
+                version = ctx.attr.version,
             ),
         ),
     ]
@@ -39,6 +42,10 @@ remotive_topology_toolchain = rule(
             executable = True,
             cfg = "exec",
             doc = "Label of the topology binary (the sh_binary materialised by the repo rule).",
+        ),
+        "version": attr.string(
+            mandatory = True,
+            doc = "Release version of the binary, e.g. \"0.32.1\".",
         ),
     },
     doc = "Wraps a `remotive-topology` binary as a Bazel toolchain.",

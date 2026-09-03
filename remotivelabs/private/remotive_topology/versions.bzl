@@ -14,6 +14,10 @@ To add a new version:
   2. Add an entry below.
   3. Bump `MODULE.bazel` (and any examples / tests pinned to a specific
      version) to the new version.
+
+When removing the 0.29.x entries, also drop the `--format` workaround in
+`remotivelabs/rules/remotive_topology.bzl` (`remotive_topology_gateway_mapping`);
+those releases predate `gateway-mapping --no-workspace` and `--format`.
 """
 
 REMOTIVE_TOPOLOGY_VERSIONS = {

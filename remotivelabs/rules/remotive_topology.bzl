@@ -13,7 +13,12 @@ version with `remotivelabs.topology(...)`. RBE workers pick up the
 binary matching their exec platform automatically.
 """
 
+load("//remotivelabs/private/remotive_topology:version.bzl", "version_at_least")
+
 _TOOLCHAIN_TYPE = "@rules_remotivelabs//remotivelabs/toolchains/remotive_topology:toolchain_type"
+
+# `gateway-mapping --no-workspace` and `--format` first shipped in this release.
+_GATEWAY_MAPPING_FLAGS_MIN_VERSION = "0.30.0"
 
 # Hermetic per-action env for the topology binary. The binary's XDG
 # resolver honors `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive >
@@ -163,21 +168,35 @@ remotive_topology_show_platform = rule(
 
 def _gateway_mapping_impl(ctx):
     out = ctx.actions.declare_file(ctx.label.name + ".mapping.yaml")
-    binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
+    toolchain = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info
 
     args = ctx.actions.args()
     args.add("gateway-mapping")
-
-    # No workspace exists in the sandbox; the positional output path is
-    # required in this mode.
-    args.add("--no-workspace")
     args.add("--gateway-ecu", ctx.attr.gateway_ecu)
     args.add("--platform", ctx.file.platform.path)
-    args.add("--format", ctx.attr.format)
+
+    # Workaround for remotive-topology < 0.30.0, which has neither
+    # `--no-workspace` nor `--format`. Those releases only emit the legacy
+    # structure and, without a workspace marker, already accept paths
+    # anywhere under the working directory (the action's execroot). Drop
+    # this branch, and pass both flags unconditionally, once 0.29.x is
+    # removed from versions.bzl.
+    if version_at_least(toolchain.version, _GATEWAY_MAPPING_FLAGS_MIN_VERSION):
+        # No workspace exists in the sandbox; the positional output path is
+        # required in this mode.
+        args.add("--no-workspace")
+        args.add("--format", ctx.attr.format)
+    elif ctx.attr.format != "legacy":
+        fail(("format '{}' needs remotive-topology >= {}; the resolved " +
+              "toolchain provides {}.").format(
+            ctx.attr.format,
+            _GATEWAY_MAPPING_FLAGS_MIN_VERSION,
+            toolchain.version,
+        ))
     args.add(out.path)
 
     ctx.actions.run(
-        executable = binary,
+        executable = toolchain.binary,
         arguments = [args],
         inputs = depset([ctx.file.platform] + ctx.files.data),
         outputs = [out],
@@ -218,7 +237,8 @@ remotive_topology_gateway_mapping = rule(
             values = ["legacy", "remotive-topology-mapping"],
             doc = "Mapping structure to emit: the legacy gateway-mapping " +
                   "structure (default) or the versioned " +
-                  "`remotive-topology-mapping` document.",
+                  "`remotive-topology-mapping` document (needs " +
+                  "remotive-topology >= 0.30.0).",
         ),
     },
     toolchains = [_TOOLCHAIN_TYPE],

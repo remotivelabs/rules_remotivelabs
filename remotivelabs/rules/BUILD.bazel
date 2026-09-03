@@ -4,6 +4,7 @@ bzl_library(
     name = "remotive_topology_bzl",
     srcs = ["remotive_topology.bzl"],
     visibility = ["//visibility:public"],
+    deps = ["//remotivelabs/private/remotive_topology:bzl_srcs"],
 )
 
 # Let Stardoc (//docs) read the source as its `input`.
