@@ -19,7 +19,7 @@ Attribute docs are rendered by Stardoc:
 `MODULE.bazel`:
 
 ```starlark
-bazel_dep(name = "rules_remotivelabs", version = "0.3.0")
+bazel_dep(name = "rules_remotivelabs", version = "0.3.1")
 
 remotivelabs = use_extension("@rules_remotivelabs//remotivelabs:extensions.bzl", "remotivelabs")
 remotivelabs.topology(version = "0.32.1")
