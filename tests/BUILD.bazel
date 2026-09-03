@@ -6,6 +6,8 @@ load(
     "remotive_topology_gateway_mapping",
     "remotive_topology_show_instance",
 )
+load("//remotivelabs/tests:version_test.bzl", "version_test_suite")
+load("//remotivelabs/tests:versions_test.bzl", "versions_test_suite")
 
 # Test that public bzl files can be loaded
 build_test(
@@ -15,6 +17,11 @@ build_test(
         "//remotivelabs/rules:remotive_topology_bzl",
     ],
 )
+
+# Starlark unit tests: the version helpers and the release manifest.
+version_test_suite(name = "version_test")
+
+versions_test_suite(name = "versions_test")
 
 # Test that the extension creates a working topology repo for every
 # (version, platform) the manifest registers. Building the sh_binary
@@ -29,43 +36,48 @@ build_test(
     ],
 )
 
+# The minimal fixture shared by the build and show rules below.
+_MINIMAL_TOPOLOGY_FILES = glob([
+    "fixtures/topology/instances/*.yaml",
+    "fixtures/topology/models/*.yaml",
+    "fixtures/topology/tests/*.yaml",
+    "fixtures/topology/platform/*.yaml",
+    "fixtures/topology/platform/databases/*.dbc",
+]) + ["fixtures/topology/Dockerfile"]
+
 # Exercises remotive_topology_build end-to-end. The topology binary is
 # resolved through the registered toolchain (see register_toolchains in
 # the root MODULE.bazel).
 remotive_topology_build(
     name = "minimal_topology",
     srcs = ["fixtures/topology/instances/main.instance.yaml"],
-    data = glob([
-        "fixtures/topology/instances/*.yaml",
-        "fixtures/topology/models/*.yaml",
-        "fixtures/topology/tests/*.yaml",
-        "fixtures/topology/platform/*.yaml",
-        "fixtures/topology/platform/databases/*.dbc",
-    ]) + ["fixtures/topology/Dockerfile"],
-)
-
-remotive_topology_show_instance(
-    name = "minimal_resolved_instance",
-    src = "fixtures/topology/instances/main.instance.yaml",
-    data = glob([
-        "fixtures/topology/instances/*.yaml",
-        "fixtures/topology/models/*.yaml",
-        "fixtures/topology/tests/*.yaml",
-        "fixtures/topology/platform/*.yaml",
-        "fixtures/topology/platform/databases/*.dbc",
-    ]) + ["fixtures/topology/Dockerfile"],
-)
-
-sh_test(
-    name = "instance_resolution_test",
-    srcs = ["instance_resolution_test.sh"],
-    data = [":minimal_resolved_instance"],
-    env = {"INSTANCE_OUT": "$(rootpath :minimal_resolved_instance)"},
+    data = _MINIMAL_TOPOLOGY_FILES,
 )
 
 build_test(
     name = "topology_build_test",
     targets = [":minimal_topology"],
+)
+
+sh_test(
+    name = "topology_build_content_test",
+    srcs = ["topology_build_test.sh"],
+    data = [":minimal_topology"],
+    env = {"TOPOLOGY_OUT": "$(rootpath :minimal_topology)"},
+)
+
+# Exercises remotive_topology_show_instance end-to-end.
+remotive_topology_show_instance(
+    name = "minimal_resolved_instance",
+    src = "fixtures/topology/instances/main.instance.yaml",
+    data = _MINIMAL_TOPOLOGY_FILES,
+)
+
+sh_test(
+    name = "instance_resolution_test",
+    srcs = ["resolved_document_test.sh"],
+    data = [":minimal_resolved_instance"],
+    env = {"RESOLVED_OUT": "$(rootpath :minimal_resolved_instance)"},
 )
 
 # Exercises remotive_topology_gateway_mapping end-to-end. The synthetic

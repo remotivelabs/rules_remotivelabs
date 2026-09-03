@@ -16,6 +16,9 @@ _PLATFORM_CONSTRAINTS = {
     "darwin-arm64": ("@platforms//os:macos", "@platforms//cpu:aarch64"),
 }
 
+# The platform strings every `versions.bzl` entry is expected to carry.
+SUPPORTED_PLATFORMS = _PLATFORM_CONSTRAINTS.keys()
+
 def _topology_toolchains_hub_impl(ctx):
     block_template = ctx.read(ctx.attr._block_template)
     blocks = []
