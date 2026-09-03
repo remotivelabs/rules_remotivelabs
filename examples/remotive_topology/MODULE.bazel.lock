@@ -467,8 +467,8 @@
     },
     "@@rules_remotivelabs+//remotivelabs:extensions.bzl%remotivelabs": {
       "general": {
-        "bzlTransitiveDigest": "s/PFX/ey7D/09PgbqREQFVwGlOWkRheraxQM0JNXZNQ=",
-        "usagesDigest": "qWaGKqs4qTHXIvr760QvhJiAmX0UbmsYKOumVghN5LQ=",
+        "bzlTransitiveDigest": "Oryp6ulxGRHgTeZUb952adqZ9QC3XstvOmzAO7GHs5Q=",
+        "usagesDigest": "nVyUQlT6xfNovLbtHBmO7tnKTl48wJ9wYNs+Tym4aP4=",
         "recordedInputs": [
           "REPO_MAPPING:rules_remotivelabs+,rules_remotivelabs rules_remotivelabs+"
         ],
