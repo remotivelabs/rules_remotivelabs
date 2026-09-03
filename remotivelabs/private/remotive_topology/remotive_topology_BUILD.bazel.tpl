@@ -25,5 +25,6 @@ sh_binary(
 remotive_topology_toolchain(
     name = "toolchain_impl",
     binary = ":topology",
+    version = "{version}",
     visibility = ["//visibility:public"],
 )
