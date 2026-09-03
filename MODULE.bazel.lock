@@ -196,7 +196,7 @@
     "//remotivelabs:extensions.bzl%remotivelabs": {
       "general": {
         "bzlTransitiveDigest": "s/PFX/ey7D/09PgbqREQFVwGlOWkRheraxQM0JNXZNQ=",
-        "usagesDigest": "pzTl/z4XwgZet5nVfIQZ7hH9zNfWyXcM7ej6lKQU67M=",
+        "usagesDigest": "mysRerB05uvN6goLyVfvwgYFRLS7PuQjLmb2dqwGOJ8=",
         "recordedInputs": [
           "REPO_MAPPING:,rules_remotivelabs "
         ],

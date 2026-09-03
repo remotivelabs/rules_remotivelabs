@@ -468,7 +468,7 @@
     "@@rules_remotivelabs+//remotivelabs:extensions.bzl%remotivelabs": {
       "general": {
         "bzlTransitiveDigest": "s/PFX/ey7D/09PgbqREQFVwGlOWkRheraxQM0JNXZNQ=",
-        "usagesDigest": "gunPtaZp0Q7xAnX2US6Z3i7xtk2iDRw4aSdX4jYZM/0=",
+        "usagesDigest": "qWaGKqs4qTHXIvr760QvhJiAmX0UbmsYKOumVghN5LQ=",
         "recordedInputs": [
           "REPO_MAPPING:rules_remotivelabs+,rules_remotivelabs rules_remotivelabs+"
         ],
