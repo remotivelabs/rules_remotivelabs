@@ -1,3 +1,5 @@
+load(":gateway_mapping_analysis_test.bzl", "fake_topology_toolchains")
+
 # Starlark unit-test modules for the private `remotive_topology` plumbing.
 #
 # They live under //remotivelabs (not //tests) because buildifier's
@@ -5,3 +7,13 @@
 # loaded from within //remotivelabs. The test *targets* are still declared
 # in //tests/BUILD.bazel, which loads the suites from here.
 exports_files(glob(["*.bzl"]))
+
+# Never-executed toolchains for the gateway-mapping version-gate analysis
+# tests: one binary just below the flag cut-off, one right at it.
+fake_topology_toolchains(
+    name = "fake_topology",
+    versions = [
+        "0.29.5",
+        "0.30.0",
+    ],
+)
