@@ -7,6 +7,7 @@ load(
     "remotive_topology_show_instance",
     "remotive_topology_show_platform",
 )
+load("//remotivelabs/tests:gateway_mapping_analysis_test.bzl", "gateway_mapping_analysis_tests")
 load("//remotivelabs/tests:version_test.bzl", "version_test_suite")
 load("//remotivelabs/tests:versions_test.bzl", "versions_test_suite")
 
@@ -128,4 +129,30 @@ sh_test(
     srcs = ["gateway_mapping_test.sh"],
     data = [":dummy_gateway_mapping"],
     env = {"MAPPING_OUT": "$(rootpath :dummy_gateway_mapping)"},
+)
+
+# Version gate: what the gateway-mapping rule does for binaries before and
+# after 0.30.0. The targets under test are analysed with fake toolchains
+# only and never built for real, hence `manual`.
+remotive_topology_gateway_mapping(
+    name = "gate_legacy_mapping",
+    data = ["fixtures/topology/gateway/dummy_gateway.arxml"],
+    gateway_ecu = "GatewayEcu",
+    platform = "fixtures/topology/gateway/gateway.platform.yaml",
+    tags = ["manual"],
+)
+
+remotive_topology_gateway_mapping(
+    name = "gate_versioned_mapping",
+    data = ["fixtures/topology/gateway/dummy_gateway.arxml"],
+    format = "remotive-topology-mapping",
+    gateway_ecu = "GatewayEcu",
+    platform = "fixtures/topology/gateway/gateway.platform.yaml",
+    tags = ["manual"],
+)
+
+gateway_mapping_analysis_tests(
+    name = "gateway_mapping_version_gate_test",
+    legacy_target = ":gate_legacy_mapping",
+    versioned_target = ":gate_versioned_mapping",
 )
