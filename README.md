@@ -2,8 +2,17 @@
 
 Bazel rules for the [RemotiveLabs](https://remotivelabs.com)
 `remotive-topology` generator. Downloads the published native binary
-and exposes a `remotive_topology_build` rule that runs it inside
-the Bazel sandbox.
+and exposes rules that run it inside the Bazel sandbox:
+
+| Rule | `remotive topology ...` | Output |
+|---|---|---|
+| `remotive_topology_build` | `build` | directory tree `<name>_out/` |
+| `remotive_topology_show_instance` | `show instance --check` | `<name>.json` |
+| `remotive_topology_show_platform` | `show platform` | `<name>.json` |
+| `remotive_topology_gateway_mapping` | `gateway-mapping` | `<name>.mapping.yaml` |
+
+Attribute docs are rendered by Stardoc:
+`bazel build //docs:remotive_topology_md && cat bazel-bin/docs/remotive_topology_build.md`.
 
 ## Usage
 
@@ -19,12 +28,38 @@ remotivelabs.topology(version = "0.32.1")
 `BUILD.bazel`:
 
 ```starlark
-load("@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl", "remotive_topology_build")
+load(
+    "@rules_remotivelabs//remotivelabs/rules:remotive_topology.bzl",
+    "remotive_topology_build",
+    "remotive_topology_gateway_mapping",
+    "remotive_topology_show_instance",
+    "remotive_topology_show_platform",
+)
 
 remotive_topology_build(
     name = "my_topology",
     srcs = ["topology/instances/main.instance.yaml"],
     data = glob(["topology/**"]),
+)
+
+remotive_topology_show_instance(
+    name = "my_resolved_instance",
+    src = "topology/instances/main.instance.yaml",
+    data = glob(["topology/**"]),
+)
+
+remotive_topology_show_platform(
+    name = "my_resolved_platform",
+    src = "topology/platform/topology.platform.yaml",
+    data = glob(["topology/platform/**"]),
+)
+
+remotive_topology_gateway_mapping(
+    name = "my_gateway_mapping",
+    gateway_ecu = "GatewayEcu",
+    platform = "topology/platform/topology.platform.yaml",
+    data = glob(["topology/platform/**"]),
+    format = "remotive-topology-mapping",  # needs remotive-topology >= 0.30.0
 )
 ```
 
@@ -34,9 +69,9 @@ Supported versions: [`versions.bzl`](remotivelabs/private/remotive_topology/vers
 
 ## Analytics
 
-Every `remotive_topology_build` action submits analytics to Remotive
-Cloud, attributed to the org behind a **service-account token**.
-Forward your token from the shell to Bazel actions:
+Every rule action submits analytics to Remotive Cloud, attributed to the
+org behind a **service-account token**. Forward your token from the shell
+to Bazel actions:
 
 ```
 # .bazelrc
@@ -54,6 +89,6 @@ Optional endpoint overrides forward the same way:
 ## Tests
 
 ```bash
-bazel test //tests:all                                  # rules_remotivelabs unit tests
+bazel test //...                                        # rules_remotivelabs unit tests
 cd examples/remotive_topology && bazel test //...       # consumer workspace (sample)
 ```
