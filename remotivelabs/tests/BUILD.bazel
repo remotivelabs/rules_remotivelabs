@@ -1,0 +1,7 @@
+# Starlark unit-test modules for the private `remotive_topology` plumbing.
+#
+# They live under //remotivelabs (not //tests) because buildifier's
+# bzl-visibility lint only allows `//remotivelabs/private/...` modules to be
+# loaded from within //remotivelabs. The test *targets* are still declared
+# in //tests/BUILD.bazel, which loads the suites from here.
+exports_files(glob(["*.bzl"]))
