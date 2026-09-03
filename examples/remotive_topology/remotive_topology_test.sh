@@ -13,7 +13,7 @@ if [ ! -d "${TOPOLOGY_OUT}" ]; then
     exit 1
 fi
 
-# remotive_topology_generate writes the resolved topology under
+# remotive_topology_build writes the resolved topology under
 # <out>/<name>/. The fixture instance is named `getting-started`.
 if [ ! -d "${TOPOLOGY_OUT}/getting-started" ]; then
     echo "✗ Expected ${TOPOLOGY_OUT}/getting-started to exist"
