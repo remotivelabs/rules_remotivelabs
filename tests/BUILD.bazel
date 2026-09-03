@@ -5,6 +5,7 @@ load(
     "remotive_topology_build",
     "remotive_topology_gateway_mapping",
     "remotive_topology_show_instance",
+    "remotive_topology_show_platform",
 )
 load("//remotivelabs/tests:version_test.bzl", "version_test_suite")
 load("//remotivelabs/tests:versions_test.bzl", "versions_test_suite")
@@ -78,6 +79,21 @@ sh_test(
     srcs = ["resolved_document_test.sh"],
     data = [":minimal_resolved_instance"],
     env = {"RESOLVED_OUT": "$(rootpath :minimal_resolved_instance)"},
+)
+
+# Exercises remotive_topology_show_platform end-to-end on the platform
+# file alone; it must resolve the same channels the instance does.
+remotive_topology_show_platform(
+    name = "minimal_resolved_platform",
+    src = "fixtures/topology/platform/topology.platform.yaml",
+    data = glob(["fixtures/topology/platform/databases/*.dbc"]),
+)
+
+sh_test(
+    name = "platform_resolution_test",
+    srcs = ["resolved_document_test.sh"],
+    data = [":minimal_resolved_platform"],
+    env = {"RESOLVED_OUT": "$(rootpath :minimal_resolved_platform)"},
 )
 
 # Exercises remotive_topology_gateway_mapping end-to-end. The synthetic
