@@ -467,30 +467,30 @@
     },
     "@@rules_remotivelabs+//remotivelabs:extensions.bzl%remotivelabs": {
       "general": {
-        "bzlTransitiveDigest": "khKCU5fAiKEUoOHPNUymRwx5otTlnTIkijLsyp2psK0=",
-        "usagesDigest": "Xubx5OaDmdPDxZ9ZVSvElbC7NhbLHy36iH35eKDy9OQ=",
+        "bzlTransitiveDigest": "s/PFX/ey7D/09PgbqREQFVwGlOWkRheraxQM0JNXZNQ=",
+        "usagesDigest": "gunPtaZp0Q7xAnX2US6Z3i7xtk2iDRw4aSdX4jYZM/0=",
         "recordedInputs": [
           "REPO_MAPPING:rules_remotivelabs+,rules_remotivelabs rules_remotivelabs+"
         ],
         "generatedRepoSpecs": {
-          "remotive_topology_0_30_0_darwin_arm64": {
+          "remotive_topology_0_32_1_darwin_arm64": {
             "repoRuleId": "@@rules_remotivelabs+//remotivelabs/private/remotive_topology:remotive_topology_repo.bzl%remotive_topology_repo",
             "attributes": {
-              "version": "0.30.0",
+              "version": "0.32.1",
               "platform": "darwin-arm64"
             }
           },
-          "remotive_topology_0_30_0_linux_aarch64": {
+          "remotive_topology_0_32_1_linux_aarch64": {
             "repoRuleId": "@@rules_remotivelabs+//remotivelabs/private/remotive_topology:remotive_topology_repo.bzl%remotive_topology_repo",
             "attributes": {
-              "version": "0.30.0",
+              "version": "0.32.1",
               "platform": "linux-aarch64"
             }
           },
-          "remotive_topology_0_30_0_linux_x86_64": {
+          "remotive_topology_0_32_1_linux_x86_64": {
             "repoRuleId": "@@rules_remotivelabs+//remotivelabs/private/remotive_topology:remotive_topology_repo.bzl%remotive_topology_repo",
             "attributes": {
-              "version": "0.30.0",
+              "version": "0.32.1",
               "platform": "linux-x86_64"
             }
           },
@@ -498,9 +498,9 @@
             "repoRuleId": "@@rules_remotivelabs+//remotivelabs/private/remotive_topology:topology_toolchains_hub.bzl%topology_toolchains_hub",
             "attributes": {
               "repos": [
-                "remotive_topology_0_30_0_darwin_arm64",
-                "remotive_topology_0_30_0_linux_aarch64",
-                "remotive_topology_0_30_0_linux_x86_64"
+                "remotive_topology_0_32_1_darwin_arm64",
+                "remotive_topology_0_32_1_linux_aarch64",
+                "remotive_topology_0_32_1_linux_x86_64"
               ],
               "platforms": [
                 "darwin-arm64",
@@ -508,9 +508,9 @@
                 "linux-x86_64"
               ],
               "toolchain_names": [
-                "remotive_topology_0_30_0_darwin_arm64",
-                "remotive_topology_0_30_0_linux_aarch64",
-                "remotive_topology_0_30_0_linux_x86_64"
+                "remotive_topology_0_32_1_darwin_arm64",
+                "remotive_topology_0_32_1_linux_aarch64",
+                "remotive_topology_0_32_1_linux_x86_64"
               ]
             }
           }
