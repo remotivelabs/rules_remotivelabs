@@ -1,8 +1,9 @@
 """
 Rules that invoke the native `remotive-topology` binary inside the
 Bazel sandbox: `remotive_topology_build` builds topology files from
-`*.instance.yaml` sources; `remotive_topology_gateway_mapping` extracts
-one gateway ECU's mapping document from a platform.
+`*.instance.yaml` sources; `remotive_topology_show_instance` resolves an
+instance into JSON; `remotive_topology_gateway_mapping` extracts one
+gateway ECU's mapping document from a platform.
 
 The binary is resolved through the Bazel toolchain that
 `rules_remotivelabs` registers globally via the
@@ -12,6 +13,20 @@ binary matching their exec platform automatically.
 """
 
 _TOOLCHAIN_TYPE = "@rules_remotivelabs//remotivelabs/toolchains/remotive_topology:toolchain_type"
+
+# Hermetic per-action env for the topology binary. The binary's XDG
+# resolver honors `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive >
+# $HOME/<XDG-default>`, so pinning slot 1 keeps every config and cache
+# write inside the Bazel sandbox regardless of consumer env.
+_ACTION_ENV = {
+    # Pre-consent — the interactive consent prompt can't run inside the
+    # Bazel sandbox. Transitional; will be dropped once the binary
+    # requires REMOTIVE_CLOUD_AUTH_TOKEN for every call.
+    "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
+    # Hermetic per-action dirs.
+    "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
+    "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
+}
 
 def _impl(ctx):
     out_dir = ctx.actions.declare_directory(ctx.label.name + "_out")
@@ -27,26 +42,12 @@ def _impl(ctx):
     for src in ctx.files.srcs:
         args.add("-f", src.path)
 
-    # Hermetic per-action env for the topology binary. The binary's
-    # XDG resolver honors `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive
-    # > $HOME/<XDG-default>`, so pinning slot 1 keeps every config and
-    # cache write inside the Bazel sandbox regardless of consumer env.
-    env = {
-        # Pre-consent — the interactive consent prompt can't run inside
-        # the Bazel sandbox. Transitional; will be dropped once the binary
-        # requires REMOTIVE_CLOUD_AUTH_TOKEN for every call.
-        "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
-        # Hermetic per-action dirs.
-        "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
-        "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
-    }
-
     ctx.actions.run(
         executable = binary,
         arguments = [args],
         inputs = depset(ctx.files.srcs + ctx.files.data),
         outputs = [out_dir],
-        env = env,
+        env = _ACTION_ENV,
         # ERTS wrappers shell out to `dirname` etc.; need host PATH.
         use_default_shell_env = True,
         mnemonic = "RemotiveTopologyBuild",
@@ -93,11 +94,8 @@ def _show_instance_impl(ctx):
         arguments = [args],
         inputs = depset([ctx.file.src] + ctx.files.data),
         outputs = [output],
-        env = {
-            "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
-            "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
-            "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
-        },
+        env = _ACTION_ENV,
+        # ERTS wrappers shell out to `dirname` etc.; need host PATH.
         use_default_shell_env = True,
         mnemonic = "RemotiveTopologyShowInstance",
         progress_message = "Resolving topology instance for %{label}",
@@ -138,20 +136,12 @@ def _gateway_mapping_impl(ctx):
     args.add("--format", ctx.attr.format)
     args.add(out.path)
 
-    # Same hermetic per-action env as remotive_topology_build; see the
-    # comments there.
-    env = {
-        "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
-        "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
-        "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
-    }
-
     ctx.actions.run(
         executable = binary,
         arguments = [args],
         inputs = depset([ctx.file.platform] + ctx.files.data),
         outputs = [out],
-        env = env,
+        env = _ACTION_ENV,
         # ERTS wrappers shell out to `dirname` etc.; need host PATH.
         use_default_shell_env = True,
         mnemonic = "RemotiveTopologyGatewayMapping",
