@@ -89,6 +89,6 @@ Optional endpoint overrides forward the same way:
 ## Tests
 
 ```bash
-bazel test //...                                        # rules_remotivelabs unit tests
+bazel test //tests:all                                  # rules_remotivelabs unit tests
 cd examples/remotive_topology && bazel test //...       # consumer workspace (sample)
 ```
