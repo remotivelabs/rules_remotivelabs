@@ -52,6 +52,7 @@ def _remotive_topology_repo_impl(ctx):
     ctx.download_and_extract(
         url = [url],
         sha256 = sha256,
+        type = "tar.gz",
     )
 
     # Bazel-aware shim that locates the release root in the runfiles tree
