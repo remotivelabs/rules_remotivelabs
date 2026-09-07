@@ -74,6 +74,11 @@ def _run_topology(ctx, args, inputs, outputs, mnemonic, progress_message):
         # Only here so that `--action_env=NAME` forwarding works for the
         # cloud credentials; PATH itself is pinned in _ACTION_ENV.
         use_default_shell_env = True,
+        # The binary authorizes every invocation against Remotive Cloud
+        # and fails when it can't reach it. Say so, so sandboxes and
+        # remote executors that block network by default grant it here.
+        # Stopgap until the generator no longer needs network to generate.
+        execution_requirements = {"requires-network": ""},
         mnemonic = mnemonic,
         progress_message = progress_message,
     )
