@@ -45,7 +45,16 @@ _ACTION_ENV = {
     # Bazel sandbox. Transitional; will be dropped once the binary
     # requires REMOTIVE_CLOUD_AUTH_TOKEN for every call.
     "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
-    # Hermetic per-action dirs.
+    # The binary caches parsed signal databases on disk, validated by
+    # mtime, and turns that cache on whenever it detects a workspace
+    # marker (`remotive.yaml` or `.remotive/`) above its working directory.
+    # A consumer keeping one at the repo root has it in the execroot, so
+    # `show` (which has no --no-workspace) would start writing to the dir
+    # below. Nothing survives an action anyway; switch the cache off.
+    "REMOTIVE_TOPOLOGY_CACHE_DISABLED": "true",
+    # Hermetic per-action dirs, the backstop for every other writer
+    # (consent record, completion cache). Only private under a sandbox
+    # with a hermetic /tmp; the local strategy and macOS share the host's.
     "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
     "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
 }
