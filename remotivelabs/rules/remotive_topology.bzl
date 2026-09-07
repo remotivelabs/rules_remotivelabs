@@ -33,11 +33,12 @@ _GATEWAY_MAPPING_FLAGS_MIN_VERSION = "0.30.0"
 # description (see AGENTS.md); keep it in sync with the dict below and with
 # the README's "Analytics and network" section.
 #
-# Set unconditionally — the dict below: PATH, the analytics consent bypass,
-# the on-disk cache switch and the config/cache dirs. The binary's XDG
-# resolver honors `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive >
-# $HOME/<XDG-default>`, so pinning slot 1 keeps every write out of the
-# consumer's home regardless of their env.
+# Set unconditionally — the dict below plus the two dirs `_run_topology`
+# derives per action: PATH, the analytics consent bypass, the on-disk cache
+# switch, and REMOTIVE_CONFIG_DIR / REMOTIVE_CACHE_DIR pointing into an
+# action-private scratch directory. The binary's XDG resolver honors
+# `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive > $HOME/<XDG-default>`,
+# so pinning slot 1 keeps every read and write off the consumer's host.
 #
 # Forwarded from the consumer's invocation env with `--action_env=NAME`.
 # These must never appear in the dict below: a value here would override
@@ -69,25 +70,39 @@ _ACTION_ENV = {
     # `show` (which has no --no-workspace) would start writing to the dir
     # below. Nothing survives an action anyway; switch the cache off.
     "REMOTIVE_TOPOLOGY_CACHE_DISABLED": "true",
-    # Hermetic per-action dirs, the backstop for every other writer
-    # (consent record, completion cache). Only private under a sandbox
-    # with a hermetic /tmp; the local strategy and macOS share the host's.
-    "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
-    "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
 }
+
+# Sub-directories of the per-action scratch tree that REMOTIVE_CONFIG_DIR
+# and REMOTIVE_CACHE_DIR point at.
+_SCRATCH_CONFIG_SUBDIR = "config"
+_SCRATCH_CACHE_SUBDIR = "cache"
 
 def _run_topology(ctx, args, inputs, outputs, mnemonic, progress_message):
     """Runs the toolchain's `remotive-topology` binary as one hermetic action.
 
     Every rule in this file goes through here so the action env contract
     (`_ACTION_ENV` and its comment block) is applied in exactly one place.
+
+    The binary reads its config dir (credentials in `config.json`, TLS
+    certs that change generated output) and would write consent and cache
+    files there. Fixed paths under /tmp are only private where the sandbox
+    provides a hermetic /tmp; the local strategy, macOS and
+    processwrapper-sandbox share the host's. So each action gets its own
+    scratch tree, declared as an output: Bazel creates it empty before the
+    action runs, nothing else can write into it, and concurrent actions
+    never collide.
     """
+    scratch = ctx.actions.declare_directory(ctx.label.name + "_scratch")
+    env = dict(_ACTION_ENV)
+    env["REMOTIVE_CONFIG_DIR"] = scratch.path + "/" + _SCRATCH_CONFIG_SUBDIR
+    env["REMOTIVE_CACHE_DIR"] = scratch.path + "/" + _SCRATCH_CACHE_SUBDIR
+
     ctx.actions.run(
         executable = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary,
         arguments = [args],
         inputs = depset(inputs),
-        outputs = outputs,
-        env = _ACTION_ENV,
+        outputs = outputs + [scratch],
+        env = env,
         # Only here so that `--action_env=NAME` forwarding works for the
         # cloud credentials; PATH itself is pinned in _ACTION_ENV.
         use_default_shell_env = True,

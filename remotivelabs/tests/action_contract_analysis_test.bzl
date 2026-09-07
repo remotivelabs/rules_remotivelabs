@@ -20,9 +20,14 @@ load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 _PINNED_ENV = {
     "PATH": "/bin:/usr/bin:/usr/local/bin",
     "REMOTIVE_CLOUD_ANALYTICS_CONSENT": "true",
-    "REMOTIVE_CONFIG_DIR": "/tmp/remotive-config",
-    "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
     "REMOTIVE_TOPOLOGY_CACHE_DISABLED": "true",
+}
+
+# Derived per action: both point into the `<name>_scratch` tree the action
+# declares as an output, so nothing outside the action can seed them.
+_SCRATCH_DIRS = {
+    "REMOTIVE_CONFIG_DIR": "config",
+    "REMOTIVE_CACHE_DIR": "cache",
 }
 
 # Forwarded from the consumer's invocation env via `--action_env`. Setting
@@ -41,12 +46,28 @@ def _topology_action(env):
     analysistest.fail(env, "no RemotiveTopology* action registered")
     return None
 
+def _scratch_output(action):
+    for output in action.outputs.to_list():
+        if output.is_directory and output.basename.endswith("_scratch"):
+            return output
+    return None
+
 def _action_contract_test_impl(ctx):
     env = analysistest.begin(ctx)
     action = _topology_action(env)
     if action:
         for name, value in _PINNED_ENV.items():
             asserts.equals(env, value, action.env.get(name), name + " must be pinned")
+        scratch = _scratch_output(action)
+        asserts.true(env, scratch != None, "the action must declare its scratch tree as an output")
+        if scratch:
+            for name, subdir in _SCRATCH_DIRS.items():
+                asserts.equals(
+                    env,
+                    scratch.path + "/" + subdir,
+                    action.env.get(name),
+                    name + " must point into the action's scratch tree",
+                )
         for name in _FORWARDED_ENV:
             asserts.false(env, name in action.env, name + " must be left to --action_env")
     return analysistest.end(env)
