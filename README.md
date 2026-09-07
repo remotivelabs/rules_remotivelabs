@@ -67,24 +67,38 @@ remotive_topology_gateway_mapping(
 
 Supported versions: [`versions.bzl`](remotivelabs/private/remotive_topology/versions.bzl).
 
-## Analytics
+## Analytics and network
 
-Every rule action submits analytics to Remotive Cloud, attributed to the
-org behind a **service-account token**. Forward your token from the shell
-to Bazel actions:
+Every rule action authorizes itself against Remotive Cloud before it
+generates anything, so the actions need network egress to
+`cloud.remotivelabs.com`. They carry the `requires-network` execution
+requirement for sandboxes and remote executors that block network by
+default.
+
+Analytics are attributed to the org behind a **service-account token**.
+Forward the token *and* its organization from the shell to Bazel actions;
+the binary rejects one without the other:
 
 ```
 # .bazelrc
 build --action_env=REMOTIVE_CLOUD_AUTH_TOKEN
+build --action_env=REMOTIVE_CLOUD_ORGANIZATION
 ```
 
 ```bash
 export REMOTIVE_CLOUD_AUTH_TOKEN=$(remotive cloud auth print-access-token)
+export REMOTIVE_CLOUD_ORGANIZATION=<organization>
 ```
 
-Optional endpoint overrides forward the same way:
-`REMOTIVE_CLOUD_BASE_URL`, `REMOTIVE_CLOUD_ORGANIZATION`,
-`REMOTIVE_CLOUD_PUBLIC_KEY`.
+Optional endpoint overrides forward the same way: `REMOTIVE_CLOUD_BASE_URL`,
+`REMOTIVE_CLOUD_PUBLIC_KEY`. Behind a proxy, also forward
+`https_proxy`/`HTTPS_PROXY` and `no_proxy`/`NO_PROXY`.
+
+Everything else the binary needs is pinned by the rules — `PATH`, a
+disabled on-disk cache, config and cache dirs inside the sandbox — so the
+action key never depends on the host. Bazel 9 runs actions with a strict
+env by default; on older Bazel add `--incompatible_strict_action_env` so
+the rest of your build gets the same treatment.
 
 ## Tests
 

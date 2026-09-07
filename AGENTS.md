@@ -26,7 +26,7 @@ action rule, or the `remotive_topology_toolchain` plumbing.
   the platform actually selected by toolchain resolution. RBE workers on
   a different arch from the host trigger the appropriate fetch on demand.
 - Keep `extensions.bzl` and the repository rule simple — naming convention
-  is centralised in `_get_topology_repo_name`. Do not duplicate it.
+  is centralised in `_per_platform_repo_name`. Do not duplicate it.
 - Use **template files** (`.tpl`) for generated `BUILD.bazel` content — no
   inline strings in repository rules.
 - `examples/remotive_topology` is a self-contained child workspace —
@@ -37,15 +37,21 @@ action rule, or the `remotive_topology_toolchain` plumbing.
   of [`remotivelabs/rules/remotive_topology.bzl`](remotivelabs/rules/remotive_topology.bzl) — the canonical
   source of truth for "set unconditionally" vs "forwarded" semantics.
   Keep it in sync with any change to `env = {...}` in that rule.
-- Two categories: **set unconditionally** (consent bypass, config dir,
-  cache dir) vs **forwarded from consumer's invocation env** via
-  `--action_env=NAME`. The forwarded set is just the cloud creds:
-  `REMOTIVE_CLOUD_AUTH_TOKEN` (for per-user metric attribution) and the
-  optional endpoint overrides `REMOTIVE_CLOUD_BASE_URL`,
-  `REMOTIVE_CLOUD_ORGANIZATION`, `REMOTIVE_CLOUD_PUBLIC_KEY`. Forwarded
-  vars must NOT appear in the rule's `env` dict — that would override
-  the user-supplied value. `use_default_shell_env = True` is what makes
-  `--action_env` flow through to the action.
+- Two categories: **set unconditionally** (`PATH`, consent bypass, the
+  on-disk cache switch, config dir, cache dir) vs **forwarded from the
+  consumer's invocation env** via `--action_env=NAME`. The forwarded set
+  is the cloud creds — `REMOTIVE_CLOUD_AUTH_TOKEN` together with
+  `REMOTIVE_CLOUD_ORGANIZATION`; the binary rejects one without the
+  other and the pinned config dir can't supply the org — plus the
+  optional overrides `REMOTIVE_CLOUD_BASE_URL`, `REMOTIVE_CLOUD_PUBLIC_KEY`
+  and the proxy vars. Forwarded vars must NOT appear in the rule's `env`
+  dict — that would override the user-supplied value.
+  `use_default_shell_env = True` is what makes `--action_env` flow
+  through; `PATH` is pinned in `env` so it does not inherit the host's.
+  `//tests:action_contract_test` pins this contract.
+- Every action carries `requires-network`: the binary authorizes each
+  invocation against Remotive Cloud. Stopgap until the generator can
+  run offline; drop it then.
 - `TOPOLOGY` is *not* read by the topology binary; it's read by the
   broker (which the topology binary doesn't start as part of its OTP
   application set). The binary emits `TOPOLOGY=true` as a literal into

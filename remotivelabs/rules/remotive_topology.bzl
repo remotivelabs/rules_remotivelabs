@@ -29,10 +29,27 @@ RemotiveTopologyBuildInfo = provider(
 # `gateway-mapping --no-workspace` and `--format` first shipped in this release.
 _GATEWAY_MAPPING_FLAGS_MIN_VERSION = "0.30.0"
 
-# Hermetic per-action env for the topology binary. The binary's XDG
+# Action env contract for the topology binary. This block is the canonical
+# description (see AGENTS.md); keep it in sync with the dict below and with
+# the README's "Analytics and network" section.
+#
+# Set unconditionally — the dict below: PATH, the analytics consent bypass,
+# the on-disk cache switch and the config/cache dirs. The binary's XDG
 # resolver honors `REMOTIVE_<KIND>_DIR > XDG_<KIND>_HOME/remotive >
-# $HOME/<XDG-default>`, so pinning slot 1 keeps every config and cache
-# write inside the Bazel sandbox regardless of consumer env.
+# $HOME/<XDG-default>`, so pinning slot 1 keeps every write out of the
+# consumer's home regardless of their env.
+#
+# Forwarded from the consumer's invocation env with `--action_env=NAME`.
+# These must never appear in the dict below: a value here would override
+# the consumer's.
+#   REMOTIVE_CLOUD_AUTH_TOKEN + REMOTIVE_CLOUD_ORGANIZATION — credentials
+#     for per-org analytics attribution. They go together: the binary
+#     rejects a token without an organization, and with the config dir
+#     pinned to an empty location no config.json can supply one.
+#   REMOTIVE_CLOUD_BASE_URL, REMOTIVE_CLOUD_PUBLIC_KEY — optional endpoint
+#     overrides.
+#   https_proxy/HTTPS_PROXY, no_proxy/NO_PROXY — read by the binary's HTTP
+#     client; needed wherever Remotive Cloud sits behind a proxy.
 _ACTION_ENV = {
     # The release is an OTP tree whose `sh` wrappers call `dirname`, `sed`
     # and friends, so an action needs *a* PATH. Pin the value Bazel's
