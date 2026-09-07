@@ -17,6 +17,15 @@ load("//remotivelabs/private/remotive_topology:version.bzl", "version_at_least")
 
 _TOOLCHAIN_TYPE = "@rules_remotivelabs//remotivelabs/toolchains/remotive_topology:toolchain_type"
 
+RemotiveTopologyBuildInfo = provider(
+    doc = "Build metadata for a generated RemotiveTopology.",
+    fields = {
+        "name": "The topology target name.",
+        "output_dir": "The generated topology tree artifact.",
+        "sources": "The declared source and data closure.",
+    },
+)
+
 # `gateway-mapping --no-workspace` and `--format` first shipped in this release.
 _GATEWAY_MAPPING_FLAGS_MIN_VERSION = "0.30.0"
 
@@ -60,10 +69,18 @@ def _impl(ctx):
         progress_message = "Building topology for %{label}",
     )
 
-    return [DefaultInfo(files = depset([out_dir]))]
+    return [
+        DefaultInfo(files = depset([out_dir])),
+        RemotiveTopologyBuildInfo(
+            name = ctx.label.name,
+            output_dir = out_dir,
+            sources = depset(ctx.files.srcs + ctx.files.data),
+        ),
+    ]
 
 remotive_topology_build = rule(
     implementation = _impl,
+    provides = [RemotiveTopologyBuildInfo],
     attrs = {
         "srcs": attr.label_list(
             allow_files = True,

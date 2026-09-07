@@ -8,6 +8,7 @@ load(
     "remotive_topology_show_platform",
 )
 load("//remotivelabs/tests:gateway_mapping_analysis_test.bzl", "gateway_mapping_analysis_tests")
+load("//remotivelabs/tests:topology_provider_analysis_test.bzl", "topology_provider_analysis_test")
 load("//remotivelabs/tests:version_test.bzl", "version_test_suite")
 load("//remotivelabs/tests:versions_test.bzl", "versions_test_suite")
 
@@ -54,6 +55,11 @@ remotive_topology_build(
     name = "minimal_topology",
     srcs = ["fixtures/topology/instances/main.instance.yaml"],
     data = _MINIMAL_TOPOLOGY_FILES,
+)
+
+topology_provider_analysis_test(
+    name = "topology_provider_analysis_test",
+    target_under_test = ":minimal_topology",
 )
 
 build_test(
