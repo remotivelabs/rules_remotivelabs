@@ -95,8 +95,10 @@ Optional endpoint overrides forward the same way: `REMOTIVE_CLOUD_BASE_URL`,
 `https_proxy`/`HTTPS_PROXY` and `no_proxy`/`NO_PROXY`.
 
 Everything else the binary needs is pinned by the rules — `PATH`, a
-disabled on-disk cache, config and cache dirs inside the sandbox — so the
-action key never depends on the host. Bazel 9 runs actions with a strict
+disabled on-disk cache, and config and cache dirs inside an action-private
+scratch tree (`<name>_scratch/`, declared as an output so nothing on the
+host can seed it) — so neither the action key nor the output depends on
+the host. Bazel 9 runs actions with a strict
 env by default; on older Bazel add `--incompatible_strict_action_env` so
 the rest of your build gets the same treatment.
 

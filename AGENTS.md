@@ -38,7 +38,8 @@ action rule, or the `remotive_topology_toolchain` plumbing.
   source of truth for "set unconditionally" vs "forwarded" semantics.
   Keep it in sync with any change to `env = {...}` in that rule.
 - Two categories: **set unconditionally** (`PATH`, consent bypass, the
-  on-disk cache switch, config dir, cache dir) vs **forwarded from the
+  on-disk cache switch, and config/cache dirs inside the action's own
+  `<name>_scratch` output tree — never a fixed host path) vs **forwarded from the
   consumer's invocation env** via `--action_env=NAME`. The forwarded set
   is the cloud creds — `REMOTIVE_CLOUD_AUTH_TOKEN` together with
   `REMOTIVE_CLOUD_ORGANIZATION`; the binary rejects one without the
