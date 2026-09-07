@@ -37,7 +37,19 @@ _FORWARDED_ENV = [
     "REMOTIVE_CLOUD_ORGANIZATION",
     "REMOTIVE_CLOUD_BASE_URL",
     "REMOTIVE_CLOUD_PUBLIC_KEY",
+    "https_proxy",
+    "HTTPS_PROXY",
+    "no_proxy",
+    "NO_PROXY",
 ]
+
+# What a consumer forwards with `--action_env=NAME=VALUE` in the forwarding
+# test below; each value must reach the action unchanged.
+_FORWARDED_SENTINELS = {
+    "REMOTIVE_CLOUD_AUTH_TOKEN": "sentinel-token",
+    "REMOTIVE_CLOUD_ORGANIZATION": "sentinel-org",
+    "HTTPS_PROXY": "http://sentinel-proxy:3128",
+}
 
 def _topology_action(env):
     for action in analysistest.target_actions(env):
@@ -74,6 +86,31 @@ def _action_contract_test_impl(ctx):
 
 action_contract_test = analysistest.make(_action_contract_test_impl)
 
+def _forwarding_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    action = _topology_action(env)
+    if action:
+        for name, value in _FORWARDED_SENTINELS.items():
+            asserts.equals(env, value, action.env.get(name), name + " must reach the action unchanged")
+
+        # A consumer's PATH must not displace the pinned one.
+        asserts.equals(env, _PINNED_ENV["PATH"], action.env.get("PATH"), "the pinned PATH must win")
+    return analysistest.end(env)
+
+# Analyses the target as a consumer forwarding credentials and a proxy
+# would, plus a PATH that must lose to the rule's pinned value. Guards
+# `use_default_shell_env = True`: dropping it would leave the contract test
+# green while silently cutting every consumer off from forwarding.
+forwarding_test = analysistest.make(
+    _forwarding_test_impl,
+    config_settings = {
+        "//command_line_option:action_env": [
+            name + "=" + value
+            for name, value in _FORWARDED_SENTINELS.items()
+        ] + ["PATH=/host/bin"],
+    },
+)
+
 def action_contract_tests(name, targets):
     """Checks the action contract on one target per topology rule.
 
@@ -88,7 +125,11 @@ def action_contract_tests(name, targets):
             name = test_name,
             target_under_test = target,
         )
-        tests.append(":" + test_name)
+        forwarding_test(
+            name = test_name + "_forwarding",
+            target_under_test = target,
+        )
+        tests.extend([":" + test_name, ":" + test_name + "_forwarding"])
     native.test_suite(
         name = name,
         tests = tests,
