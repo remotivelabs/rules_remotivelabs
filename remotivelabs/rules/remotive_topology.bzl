@@ -34,6 +34,13 @@ _GATEWAY_MAPPING_FLAGS_MIN_VERSION = "0.30.0"
 # $HOME/<XDG-default>`, so pinning slot 1 keeps every config and cache
 # write inside the Bazel sandbox regardless of consumer env.
 _ACTION_ENV = {
+    # The release is an OTP tree whose `sh` wrappers call `dirname`, `sed`
+    # and friends, so an action needs *a* PATH. Pin the value Bazel's
+    # --incompatible_strict_action_env uses (the default since Bazel 9).
+    # Consumers on older Bazel, or with that flag off, would otherwise
+    # inherit the host PATH into the action key. The fixed env wins over
+    # the default shell env merged in below.
+    "PATH": "/bin:/usr/bin:/usr/local/bin",
     # Pre-consent — the interactive consent prompt can't run inside the
     # Bazel sandbox. Transitional; will be dropped once the binary
     # requires REMOTIVE_CLOUD_AUTH_TOKEN for every call.
@@ -55,7 +62,8 @@ def _run_topology(ctx, args, inputs, outputs, mnemonic, progress_message):
         inputs = depset(inputs),
         outputs = outputs,
         env = _ACTION_ENV,
-        # ERTS wrappers shell out to `dirname` etc.; need host PATH.
+        # Only here so that `--action_env=NAME` forwarding works for the
+        # cloud credentials; PATH itself is pinned in _ACTION_ENV.
         use_default_shell_env = True,
         mnemonic = mnemonic,
         progress_message = progress_message,
