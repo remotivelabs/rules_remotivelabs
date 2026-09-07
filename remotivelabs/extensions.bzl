@@ -63,6 +63,11 @@ def _remotivelabs_impl(mctx):
         toolchain_names = toolchain_names,
     )
 
+    # The repos above depend only on the requested tags and the manifest in
+    # versions.bzl, so Bazel need not record this extension in
+    # MODULE.bazel.lock (which otherwise churned on every .bzl edit).
+    return mctx.extension_metadata(reproducible = True)
+
 remotivelabs = module_extension(
     implementation = _remotivelabs_impl,
     tag_classes = {

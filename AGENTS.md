@@ -75,9 +75,10 @@ release, or updating module-level dependencies.
   5. Update the `tests/BUILD.bazel` `topology_extension_test` target
      names and the root `MODULE.bazel` `use_repo` entries that reference
      the per-platform repos for testing.
-  6. Refresh both `MODULE.bazel.lock` files: `bazel mod deps` from the
-     root, then again from `examples/remotive_topology/`. Run
-     `bazel test //tests:all` and `cd examples/remotive_topology && bazel test //...`.
+  6. Run `bazel test //tests:all` and
+     `cd examples/remotive_topology && bazel test //...`. The extension is
+     marked reproducible, so neither `MODULE.bazel.lock` records it; a
+     version bump leaves both lockfiles untouched.
 - Bumping the module: update `version` in the root `MODULE.bazel`; keep
   `examples/remotive_topology/MODULE.bazel.lock` in sync.
 
