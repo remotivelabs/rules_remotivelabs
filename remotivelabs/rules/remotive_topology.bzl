@@ -43,28 +43,43 @@ _ACTION_ENV = {
     "REMOTIVE_CACHE_DIR": "/tmp/remotive-cache",
 }
 
-def _impl(ctx):
+def _run_topology(ctx, args, inputs, outputs, mnemonic, progress_message):
+    """Runs the toolchain's `remotive-topology` binary as one hermetic action.
+
+    Every rule in this file goes through here so the action env contract
+    (`_ACTION_ENV` and its comment block) is applied in exactly one place.
+    """
+    ctx.actions.run(
+        executable = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary,
+        arguments = [args],
+        inputs = depset(inputs),
+        outputs = outputs,
+        env = _ACTION_ENV,
+        # ERTS wrappers shell out to `dirname` etc.; need host PATH.
+        use_default_shell_env = True,
+        mnemonic = mnemonic,
+        progress_message = progress_message,
+    )
+
+def _build_impl(ctx):
     out_dir = ctx.actions.declare_directory(ctx.label.name + "_out")
-    binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
+    inputs = ctx.files.srcs + ctx.files.data
 
     args = ctx.actions.args()
     args.add("build")
 
     # No workspace exists in the sandbox; the positional output path is
-    # required in this mode. Per-action caching still works via REMOTIVE_CACHE_DIR.
+    # required in this mode.
     args.add("--no-workspace")
     args.add(out_dir.path)
     for src in ctx.files.srcs:
         args.add("-f", src.path)
 
-    ctx.actions.run(
-        executable = binary,
-        arguments = [args],
-        inputs = depset(ctx.files.srcs + ctx.files.data),
+    _run_topology(
+        ctx,
+        args,
+        inputs = inputs,
         outputs = [out_dir],
-        env = _ACTION_ENV,
-        # ERTS wrappers shell out to `dirname` etc.; need host PATH.
-        use_default_shell_env = True,
         mnemonic = "RemotiveTopologyBuild",
         progress_message = "Building topology for %{label}",
     )
@@ -74,12 +89,12 @@ def _impl(ctx):
         RemotiveTopologyBuildInfo(
             name = ctx.label.name,
             output_dir = out_dir,
-            sources = depset(ctx.files.srcs + ctx.files.data),
+            sources = depset(inputs),
         ),
     ]
 
 remotive_topology_build = rule(
-    implementation = _impl,
+    implementation = _build_impl,
     provides = [RemotiveTopologyBuildInfo],
     attrs = {
         "srcs": attr.label_list(
@@ -105,21 +120,17 @@ def _run_show(ctx, subcommand, flags, progress_message):
     boundary, which both the source and the output path satisfy.
     """
     output = ctx.actions.declare_file(ctx.label.name + ".json")
-    binary = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.binary
 
     args = ctx.actions.args()
     args.add_all(["show", subcommand, ctx.file.src.path, "--json"])
     args.add_all(flags)
     args.add("--out-path", output.path)
 
-    ctx.actions.run(
-        executable = binary,
-        arguments = [args],
-        inputs = depset([ctx.file.src] + ctx.files.data),
+    _run_topology(
+        ctx,
+        args,
+        inputs = [ctx.file.src] + ctx.files.data,
         outputs = [output],
-        env = _ACTION_ENV,
-        # ERTS wrappers shell out to `dirname` etc.; need host PATH.
-        use_default_shell_env = True,
         mnemonic = "RemotiveTopologyShow" + subcommand.capitalize(),
         progress_message = progress_message,
     )
@@ -185,7 +196,7 @@ remotive_topology_show_platform = rule(
 
 def _gateway_mapping_impl(ctx):
     out = ctx.actions.declare_file(ctx.label.name + ".mapping.yaml")
-    toolchain = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info
+    version = ctx.toolchains[_TOOLCHAIN_TYPE].topology_info.version
 
     args = ctx.actions.args()
     args.add("gateway-mapping")
@@ -198,7 +209,7 @@ def _gateway_mapping_impl(ctx):
     # anywhere under the working directory (the action's execroot). Drop
     # this branch, and pass both flags unconditionally, once 0.29.x is
     # removed from versions.bzl.
-    if version_at_least(toolchain.version, _GATEWAY_MAPPING_FLAGS_MIN_VERSION):
+    if version_at_least(version, _GATEWAY_MAPPING_FLAGS_MIN_VERSION):
         # No workspace exists in the sandbox; the positional output path is
         # required in this mode.
         args.add("--no-workspace")
@@ -208,18 +219,15 @@ def _gateway_mapping_impl(ctx):
               "toolchain provides {}.").format(
             ctx.attr.format,
             _GATEWAY_MAPPING_FLAGS_MIN_VERSION,
-            toolchain.version,
+            version,
         ))
     args.add(out.path)
 
-    ctx.actions.run(
-        executable = toolchain.binary,
-        arguments = [args],
-        inputs = depset([ctx.file.platform] + ctx.files.data),
+    _run_topology(
+        ctx,
+        args,
+        inputs = [ctx.file.platform] + ctx.files.data,
         outputs = [out],
-        env = _ACTION_ENV,
-        # ERTS wrappers shell out to `dirname` etc.; need host PATH.
-        use_default_shell_env = True,
         mnemonic = "RemotiveTopologyGatewayMapping",
         progress_message = "Extracting gateway mapping for %{label}",
     )
