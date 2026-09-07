@@ -7,6 +7,7 @@ load(
     "remotive_topology_show_instance",
     "remotive_topology_show_platform",
 )
+load("//remotivelabs/tests:action_contract_analysis_test.bzl", "action_contract_tests")
 load("//remotivelabs/tests:gateway_mapping_analysis_test.bzl", "gateway_mapping_analysis_tests")
 load("//remotivelabs/tests:topology_provider_analysis_test.bzl", "topology_provider_analysis_test")
 load("//remotivelabs/tests:version_test.bzl", "version_test_suite")
@@ -135,6 +136,18 @@ sh_test(
     srcs = ["gateway_mapping_test.sh"],
     data = [":dummy_gateway_mapping"],
     env = {"MAPPING_OUT": "$(rootpath :dummy_gateway_mapping)"},
+)
+
+# The action env contract (pinned values, forwarded credentials left
+# alone) holds for every rule; one target per rule.
+action_contract_tests(
+    name = "action_contract_test",
+    targets = [
+        ":minimal_topology",
+        ":minimal_resolved_instance",
+        ":minimal_resolved_platform",
+        ":dummy_gateway_mapping",
+    ],
 )
 
 # Version gate: what the gateway-mapping rule does for binaries before and
