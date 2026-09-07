@@ -8,8 +8,10 @@ build --incompatible_enforce_config_setting_visibility
 # Show test output on failure
 test --test_output=errors
 
-# CI: treat warnings as errors in .bzl files
-build:ci --features=bzl_strict_action_env
+# Actions see a fixed PATH and no host env beyond --action_env. The default
+# since Bazel 9; kept explicit so this repo's own build and tests stay
+# hermetic on whichever Bazel .bazelversion points at.
+common --incompatible_strict_action_env
 
 # `examples/remotive_topology` is a child workspace with its own MODULE.bazel.
 # Hide it from the parent's package universe so `bazel test //...` here
