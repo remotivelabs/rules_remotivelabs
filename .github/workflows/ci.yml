@@ -47,6 +47,16 @@ jobs:
       - name: Test
         run: bazel test //... --test_output=errors
 
+      # The topology actions declare `requires-network`. Prove the tag grants
+      # network where the sandbox blocks it by default; requesting
+      # linux-sandbox explicitly makes this fail loudly instead of silently
+      # falling back to an unsandboxed strategy.
+      - name: Test under network-blocking sandbox
+        run: >
+          bazel test //... --test_output=errors
+          --spawn_strategy=linux-sandbox
+          --sandbox_default_allow_network=false
+
   buildifier:
     name: buildifier
     runs-on: ubuntu-24.04
