@@ -44,23 +44,27 @@ jobs:
           repository-cache: true
           module-root: examples/remotive_topology
 
-      - name: Test
-        run: bazel test //... --test_output=errors
-
       # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor,
       # and without them Bazel never registers the linux-sandbox strategy.
+      # Bazel probes for sandbox support once per server, so this has to
+      # happen before the first bazel command starts the server.
       - name: Allow unprivileged user namespaces
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Test
+        run: bazel test //... --test_output=errors
 
       # The topology actions declare `requires-network`. Prove the tag grants
       # network where the sandbox blocks it by default; requesting
       # linux-sandbox explicitly makes this fail loudly instead of silently
-      # falling back to an unsandboxed strategy.
+      # falling back to an unsandboxed strategy. The probe line reports why
+      # the sandbox is unavailable if it ever is.
       - name: Test under network-blocking sandbox
-        run: >
-          bazel test //... --test_output=errors
-          --spawn_strategy=linux-sandbox
-          --sandbox_default_allow_network=false
+        run: |
+          "$(bazel info install_base)/linux-sandbox" -- /bin/true
+          bazel test //... --test_output=errors \
+            --spawn_strategy=linux-sandbox \
+            --sandbox_default_allow_network=false
 
   buildifier:
     name: buildifier
