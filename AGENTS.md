@@ -52,7 +52,9 @@ action rule, or the `remotive_topology_toolchain` plumbing.
   `//tests:action_contract_test` pins this contract.
 - Every action carries `requires-network`: the binary authorizes each
   invocation against Remotive Cloud. Stopgap until the generator can
-  run offline; drop it then.
+  run offline; drop it then. CI runs the example consumer under
+  `--spawn_strategy=linux-sandbox --sandbox_default_allow_network=false`
+  so the tag is exercised, not just declared.
 - `TOPOLOGY` is *not* read by the topology binary; it's read by the
   broker (which the topology binary doesn't start as part of its OTP
   application set). The binary emits `TOPOLOGY=true` as a literal into

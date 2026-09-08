@@ -11,6 +11,9 @@ credentials impossible to forward.
 The `requires-network` execution requirement is not reachable from the
 Starlark `Action` API; check it with
 `bazel aquery 'mnemonic("RemotiveTopology.*", //tests:all)' --output=text`.
+That it actually grants network is exercised by the CI step that runs the
+example consumer under `--spawn_strategy=linux-sandbox
+--sandbox_default_allow_network=false`.
 """
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
