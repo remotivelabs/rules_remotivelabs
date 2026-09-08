@@ -47,6 +47,11 @@ jobs:
       - name: Test
         run: bazel test //... --test_output=errors
 
+      # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor,
+      # and without them Bazel never registers the linux-sandbox strategy.
+      - name: Allow unprivileged user namespaces
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       # The topology actions declare `requires-network`. Prove the tag grants
       # network where the sandbox blocks it by default; requesting
       # linux-sandbox explicitly makes this fail loudly instead of silently
