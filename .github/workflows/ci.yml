@@ -51,20 +51,26 @@ jobs:
       - name: Allow unprivileged user namespaces
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
-      - name: Test
-        run: bazel test //... --test_output=errors
-
       # The topology actions declare `requires-network`. Prove the tag grants
       # network where the sandbox blocks it by default; requesting
       # linux-sandbox explicitly makes this fail loudly instead of silently
       # falling back to an unsandboxed strategy. The probe line reports why
       # the sandbox is unavailable if it ever is.
+      #
+      # This runs before the plain test step and with the disk cache off:
+      # the sandbox flags don't enter the action key, so a cached topology
+      # action (from the other step or from a previous run's disk cache)
+      # would pass this step without ever executing under the sandbox.
       - name: Test under network-blocking sandbox
         run: |
           "$(bazel info install_base)/linux-sandbox" -- /bin/true
           bazel test //... --test_output=errors \
             --spawn_strategy=linux-sandbox \
-            --sandbox_default_allow_network=false
+            --sandbox_default_allow_network=false \
+            --disk_cache=
+
+      - name: Test
+        run: bazel test //... --test_output=errors
 
   buildifier:
     name: buildifier
