@@ -41,7 +41,7 @@ runs the generation and validates the output tree exists.
 ## Manual — generate + run
 
 You'll need [`docker compose`](https://docs.docker.com/compose/install/)
-and the [`remotive` CLI](https://docs.remotivelabs.com/docs/remotive-cli/installation)
+and the [`remotive` CLI](https://developer.remotivelabs.com/docs/remotive-cli/installation)
 installed locally.
 
 ```bash
