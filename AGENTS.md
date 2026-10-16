@@ -86,11 +86,11 @@ release, or updating module-level dependencies.
   `examples/remotive_topology/MODULE.bazel.lock` in sync.
 
 # Reference Documentation
-- Topology workspace: https://docs.remotivelabs.com/docs/remotive-topology/workspace
-- Topology platform files: https://docs.remotivelabs.com/docs/remotive-topology/usage/platform
-- Topology instance files: https://docs.remotivelabs.com/docs/remotive-topology/usage/instance
-- Topology running: https://docs.remotivelabs.com/docs/remotive-topology/usage/running
-- Topology JSON API: https://docs.remotivelabs.com/apis/json/topology
+- Topology workspace: https://developer.remotivelabs.com/docs/remotive-topology/workspace
+- Topology platform files: https://developer.remotivelabs.com/docs/remotive-topology/usage/platform
+- Topology instance files: https://developer.remotivelabs.com/docs/remotive-topology/usage/instance
+- Topology running: https://developer.remotivelabs.com/docs/remotive-topology/usage/running
+- Topology JSON API: https://developer.remotivelabs.com/apis/json/topology
 
 # Principles
 - **bzlmod first:** All features and examples use bzlmod (`MODULE.bazel`).
